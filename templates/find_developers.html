@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Developers - Smart Team Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</head>
+<body>
+    <!-- ==============================================
+         1. PROFESSIONAL STICKY NAVIGATION BAR
+         ============================================== -->
+    <header class="app-header">
+        <a href="{{ url_for('dashboard') }}" class="brand-container">
+            <div class="brand-logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <h2 class="brand-title">Smart Team Finder</h2>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="/find-developers" class="active">Find Developers</a>
+            <a href="/find-teams">Find Teams</a>
+            <a href="/recommendations">Recommendations</a>
+            <a href="{{ url_for('team_requests') }}">Team Requests</a>
+            <a href="{{ url_for('my_teams') }}">My Teams</a>
+        </nav>
+
+        <!-- Right Action Items (Notifications & Profile) -->
+        <div class="nav-actions">
+            <!-- Notifications Icon -->
+            <a href="{{ url_for('team_requests') }}" class="nav-icon-btn" title="Team Requests / Notifications" aria-label="Notifications">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </a>
+
+            <!-- Circular User Profile Avatar with Dropdown -->
+            <div class="profile-menu-container">
+                <button type="button" class="profile-avatar-btn" id="userProfileBtn" aria-expanded="false" aria-label="User Profile Menu">
+                    <div class="profile-avatar-circle">
+                        {{ session.get('developer_name', 'Dev')[:2]|upper }}
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+
+                <div class="profile-dropdown" id="userProfileDropdown">
+                    <div class="profile-dropdown-header">
+                        <strong>{{ session.get('developer_name', 'Developer') }}</strong>
+                    </div>
+                    <a href="{{ url_for('profile') }}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        My Profile
+                    </a>
+                    <div style="height: 1px; background: var(--border); margin: 0.35rem 0;"></div>
+                    <a href="{{ url_for('logout') }}" style="color: var(--danger);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Logout
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mobile Hamburger Button -->
+            <button class="mobile-nav-toggle" id="mobileNavBtn" aria-label="Toggle navigation">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- ==============================================
+             2. PAGE HEADER
+             ============================================== -->
+        <div class="dev-discovery-header">
+            <span class="dev-header-badge">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                Talent Discovery
+            </span>
+            <h1 class="dev-discovery-title">Find Developers</h1>
+            <p class="dev-discovery-subtitle">Discover talented developers, explore technical skills, and connect with potential teammates for your next hackathon project.</p>
+        </div>
+
+        <!-- ==============================================
+             3. SEARCH FILTER SECTION
+             ============================================== -->
+        <section class="filter-panel-card">
+            <div class="filter-panel-header">
+                <h3 class="filter-panel-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    Filter Developers
+                </h3>
+                {% if request.args.get('skill') or request.args.get('experience') or request.args.get('role') %}
+                    <a href="/find-developers" style="font-size: 0.85rem; color: var(--primary); font-weight: 600; text-decoration: none;">
+                        Reset All Filters
+                    </a>
+                {% endif %}
+            </div>
+
+            <form method="GET" action="/find-developers">
+                <div class="filter-form-grid">
+                    <!-- 1. Search by Technical Skills -->
+                    <div class="filter-group">
+                        <label for="skill">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                            Search by Skill
+                        </label>
+                        <div class="filter-input-wrapper">
+                            <input type="text" id="skill" name="skill"
+                                   placeholder="e.g. Python, React, Flask, MySQL..."
+                                   value="{{ request.args.get('skill', '') }}">
+                        </div>
+                    </div>
+
+                    <!-- 2. Experience Level -->
+                    <div class="filter-group">
+                        <label for="experience">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path d="M12 20v-6M6 20V10M18 20V4"></path>
+                            </svg>
+                            Experience Level
+                        </label>
+                        <div class="filter-input-wrapper">
+                            <select id="experience" name="experience">
+                                <option value="">All Experience Levels</option>
+                                <option value="Beginner" {% if request.args.get('experience') == 'Beginner' %}selected{% endif %}>Beginner</option>
+                                <option value="Intermediate" {% if request.args.get('experience') == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                                <option value="Advanced" {% if request.args.get('experience') == 'Advanced' %}selected{% endif %}>Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 3. Preferred Role -->
+                    <div class="filter-group">
+                        <label for="role">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            Preferred Role
+                        </label>
+                        <div class="filter-input-wrapper">
+                            <select id="role" name="role">
+                                <option value="">All Roles</option>
+                                <option value="Frontend Developer" {% if request.args.get('role') == 'Frontend Developer' %}selected{% endif %}>Frontend Developer</option>
+                                <option value="Backend Developer" {% if request.args.get('role') == 'Backend Developer' %}selected{% endif %}>Backend Developer</option>
+                                <option value="Full Stack Developer" {% if request.args.get('role') == 'Full Stack Developer' %}selected{% endif %}>Full Stack Developer</option>
+                                <option value="AI / ML Engineer" {% if 'AI' in request.args.get('role', '') %}selected{% endif %}>AI / ML Engineer</option>
+                                <option value="Data Analyst" {% if 'Data' in request.args.get('role', '') %}selected{% endif %}>Data Analyst</option>
+                                <option value="Mobile App Developer" {% if 'Mobile' in request.args.get('role', '') %}selected{% endif %}>Mobile App Developer</option>
+                                <option value="DevOps / Cloud Engineer" {% if 'DevOps' in request.args.get('role', '') %}selected{% endif %}>DevOps / Cloud Engineer</option>
+                                <option value="UI/UX Designer" {% if 'UI/UX' in request.args.get('role', '') %}selected{% endif %}>UI/UX Designer</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary" id="searchSubmitBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            Search
+                        </button>
+                        {% if request.args.get('skill') or request.args.get('experience') or request.args.get('role') %}
+                            <a href="/find-developers" class="btn secondary" title="Clear all filters">
+                                Clear
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- ==============================================
+             4. SEARCH RESULTS SUMMARY BAR
+             ============================================== -->
+        <section class="search-results-bar">
+            <div class="search-results-info">
+                <h2>Available Developers</h2>
+                {% if developers %}
+                    <span class="search-results-count">{{ developers|length }} Developer{{ 's' if developers|length != 1 else '' }} Found</span>
+                {% else %}
+                    <span class="search-results-count" style="background: #f1f5f9; color: var(--text-muted);">0 Found</span>
+                {% endif %}
+            </div>
+
+            <!-- Active filter chips -->
+            {% if request.args.get('skill') or request.args.get('experience') or request.args.get('role') %}
+                <div class="active-filter-chips">
+                    <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">Active Filters:</span>
+                    {% if request.args.get('skill') %}
+                        <span class="filter-chip">
+                            Skill: <strong>{{ request.args.get('skill') }}</strong>
+                            <a href="/find-developers?{% if request.args.get('experience') %}experience={{ request.args.get('experience') }}&{% endif %}{% if request.args.get('role') %}role={{ request.args.get('role') }}{% endif %}" class="filter-chip-remove" title="Remove skill filter">&times;</a>
+                        </span>
+                    {% endif %}
+                    {% if request.args.get('experience') %}
+                        <span class="filter-chip">
+                            Level: <strong>{{ request.args.get('experience') }}</strong>
+                            <a href="/find-developers?{% if request.args.get('skill') %}skill={{ request.args.get('skill') }}&{% endif %}{% if request.args.get('role') %}role={{ request.args.get('role') }}{% endif %}" class="filter-chip-remove" title="Remove experience filter">&times;</a>
+                        </span>
+                    {% endif %}
+                    {% if request.args.get('role') %}
+                        <span class="filter-chip">
+                            Role: <strong>{{ request.args.get('role') }}</strong>
+                            <a href="/find-developers?{% if request.args.get('skill') %}skill={{ request.args.get('skill') }}&{% endif %}{% if request.args.get('experience') %}experience={{ request.args.get('experience') }}{% endif %}" class="filter-chip-remove" title="Remove role filter">&times;</a>
+                        </span>
+                    {% endif %}
+                    <a href="/find-developers" style="font-size: 0.82rem; color: var(--primary); margin-left: 0.35rem; font-weight: 600;">Clear All</a>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- ==============================================
+             5. REDESIGNED DEVELOPER CARDS
+             ============================================== -->
+        {% if developers %}
+            <div class="developer-grid">
+                {% for developer in developers %}
+                    <div class="developer-card" id="dev-card-{{ developer.id }}">
+                        <div>
+                            <!-- Profile Information: Avatar, Name, Role & Experience -->
+                            <div class="dev-card-header">
+                                <div class="dev-card-avatar">
+                                    {{ developer.name[:2]|upper }}
+                                </div>
+                                <div class="dev-card-info">
+                                    <h3 class="dev-card-name" title="{{ developer.name }}">{{ developer.name }}</h3>
+                                    <div class="dev-card-badges">
+                                        <span class="badge badge-primary">{{ developer.preferred_role or 'Developer' }}</span>
+                                        <span class="badge badge-role">{{ developer.experience_level or 'Not specified' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Technical Skills Section -->
+                            <div class="dev-card-body">
+                                <div class="dev-skills-section">
+                                    <span class="dev-skills-label">Technical Skills</span>
+                                    <div class="dev-skills-container">
+                                        {% if developer.skills %}
+                                            {% set skills_list = developer.skills.split(',') %}
+                                            {% for s in skills_list %}
+                                                {% if s.strip() %}
+                                                    <span class="skill-pill">{{ s.strip() }}</span>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="no-skills-text">No technical skills listed</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Button: Only One Prominent "View Profile" Button -->
+                        <div class="dev-card-footer">
+                            <button type="button"
+                                    class="dev-view-profile-btn"
+                                    onclick="openQuickViewModal('{{ developer.name|escape }}', '{{ (developer.preferred_role or 'Developer')|escape }}', '{{ (developer.experience_level or 'Not specified')|escape }}', '{{ (developer.skills or '')|escape }}')">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                View Profile
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- ==============================================
+                 7. PROFESSIONAL EMPTY SEARCH STATE
+                 ============================================== -->
+            <div class="empty">
+                <div class="empty-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                </div>
+                <h2>No developers found</h2>
+                <p>Try changing your search filters or searching for different technical skills.</p>
+                <a href="/find-developers" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="1" y1="4" x2="1" y2="10"></line>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                    Clear Filters
+                </a>
+            </div>
+        {% endif %}
+
+        <!-- Back to Dashboard -->
+        <div style="margin-top: 1.5rem; margin-bottom: 2rem;">
+            <a href="{{ url_for('dashboard') }}" class="back-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         DEVELOPER QUICK VIEW MODAL
+         ============================================== -->
+    <div class="modal-backdrop" id="devQuickViewModal" role="dialog" aria-modal="true" aria-labelledby="quickViewTitle">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="quickViewTitle">Developer Profile</h3>
+                <button type="button" class="modal-close-btn" id="closeQuickViewBtn" aria-label="Close dialog">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; align-items: center; gap: 1.15rem; margin-bottom: 1.5rem;">
+                    <div class="dev-card-avatar" id="modalDevAvatar" style="width: 62px; height: 62px; font-size: 1.5rem;">
+                        DV
+                    </div>
+                    <div>
+                        <h2 id="modalDevName" style="margin: 0 0 0.35rem 0; font-size: 1.45rem;">Developer Name</h2>
+                        <div style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                            <span class="badge badge-primary" id="modalDevRole">Role</span>
+                            <span class="badge badge-role" id="modalDevExp">Experience</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="saas-profile-meta-grid" style="grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="saas-profile-item">
+                        <span class="saas-profile-item-label">Technical Skills</span>
+                        <div class="dev-skills-container" id="modalDevSkills" style="margin-top: 0.45rem;">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="dismissQuickViewBtn" style="min-width: 110px;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         PROFESSIONAL SAAS FOOTER
+         ============================================== -->
+    <footer class="saas-footer">
+        <div class="saas-footer-inner">
+            <div class="saas-footer-brand">
+                <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.65rem;">
+                    <div class="brand-logo-icon" style="width: 28px; height: 28px; font-size: 0.9rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700;">Smart Team Finder</h3>
+                </div>
+                <p>An intelligent collaboration platform for developers to form high-impact teams, discover talent, and conquer hackathons.</p>
+            </div>
+
+            <div class="saas-footer-links-group">
+                <div class="saas-footer-col">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li><a href="/find-developers">Find Developers</a></li>
+                        <li><a href="/find-teams">Explore Teams</a></li>
+                        <li><a href="/recommendations">Recommendations</a></li>
+                        <li><a href="/create-team">Create Team</a></li>
+                    </ul>
+                </div>
+
+                <div class="saas-footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Help & FAQ</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="saas-footer-bottom">
+            <span>&copy; 2026 Smart Team Finder. All rights reserved.</span>
+            <span>Built for developers &bull; Build Together, Grow Together</span>
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts for Profile Dropdown & Developer Quick View Modal -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Profile Dropdown Toggle
+            const profileBtn = document.getElementById('userProfileBtn');
+            const profileDropdown = document.getElementById('userProfileDropdown');
+
+            if (profileBtn && profileDropdown) {
+                profileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isExpanded = profileDropdown.classList.toggle('show');
+                    profileBtn.setAttribute('aria-expanded', isExpanded);
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                        profileDropdown.classList.remove('show');
+                        profileBtn.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+
+            // Quick View Modal
+            const quickModal = document.getElementById('devQuickViewModal');
+            const closeBtn = document.getElementById('closeQuickViewBtn');
+            const dismissBtn = document.getElementById('dismissQuickViewBtn');
+
+            function closeModal() {
+                if (quickModal) {
+                    quickModal.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (dismissBtn) dismissBtn.addEventListener('click', closeModal);
+
+            if (quickModal) {
+                quickModal.addEventListener('click', (e) => {
+                    if (e.target === quickModal) closeModal();
+                });
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && quickModal && quickModal.classList.contains('show')) {
+                    closeModal();
+                }
+            });
+        });
+
+        // Global function to trigger developer quick view modal
+        function openQuickViewModal(name, role, experience, skills) {
+            const modal = document.getElementById('devQuickViewModal');
+            if (!modal) return;
+
+            document.getElementById('modalDevName').textContent = name;
+            document.getElementById('modalDevAvatar').textContent = name ? name.substring(0, 2).toUpperCase() : 'DV';
+            document.getElementById('modalDevRole').textContent = role || 'Developer';
+            document.getElementById('modalDevExp').textContent = experience || 'Not specified';
+
+            const skillsContainer = document.getElementById('modalDevSkills');
+            skillsContainer.innerHTML = '';
+            if (skills && skills.trim() !== '') {
+                const splitted = skills.split(',');
+                splitted.forEach(s => {
+                    if (s.trim()) {
+                        const pill = document.createElement('span');
+                        pill.className = 'skill-pill';
+                        pill.textContent = s.trim();
+                        skillsContainer.appendChild(pill);
+                    }
+                });
+            } else {
+                skillsContainer.innerHTML = '<span class="no-skills-text">No technical skills listed</span>';
+            }
+
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+    </script>
+</body>
+</html>

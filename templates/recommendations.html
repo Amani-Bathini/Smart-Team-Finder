@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Team Recommendations - Smart Team Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</head>
+<body style="background: var(--bg-page); display: flex; flex-direction: column; min-height: 100vh;">
+
+    <!-- ==============================================
+         1. PROFESSIONAL STICKY NAVIGATION BAR
+         ============================================== -->
+    <header class="app-header">
+        <a href="{{ url_for('dashboard') }}" class="brand-container">
+            <div class="brand-logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <h2 class="brand-title">Smart Team Finder</h2>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="/find-developers">Find Developers</a>
+            <a href="/find-teams">Find Teams</a>
+            <a href="/recommendations" class="active">Recommendations</a>
+            <a href="{{ url_for('team_requests') }}">Team Requests</a>
+            <a href="{{ url_for('my_teams') }}">My Teams</a>
+        </nav>
+
+        <!-- Right Action Items (Notifications & Profile) -->
+        <div class="nav-actions">
+            <!-- Notifications Icon -->
+            <a href="{{ url_for('team_requests') }}" class="nav-icon-btn" title="Team Requests / Notifications" aria-label="Notifications">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </a>
+
+            <!-- Circular User Profile Avatar with Dropdown -->
+            <div class="profile-menu-container">
+                <button type="button" class="profile-avatar-btn" id="userProfileBtn" aria-expanded="false" aria-label="User Profile Menu">
+                    <div class="profile-avatar-circle">
+                        {{ session.get('developer_name', 'Dev')[:2]|upper }}
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+
+                <div class="profile-dropdown" id="userProfileDropdown">
+                    <div class="profile-dropdown-header">
+                        <strong>{{ session.get('developer_name', 'Developer') }}</strong>
+                        <span>Signed In</span>
+                    </div>
+                    <a href="{{ url_for('profile') }}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        My Profile
+                    </a>
+                    <div style="height: 1px; background: var(--border); margin: 0.35rem 0;"></div>
+                    <a href="{{ url_for('logout') }}" style="color: var(--danger);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==============================================
+         2. PAGE HEADER & CONTENT
+         ============================================== -->
+    <main class="container" style="flex: 1; padding-top: 2rem; padding-bottom: 3.5rem;">
+        <div class="page-header" style="margin-bottom: 2rem;">
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: #EEEDFB; color: #635BDB; padding: 0.35rem 0.85rem; border-radius: 20px; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.75rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                AI & Skill Matching
+            </div>
+            <h1 style="font-size: 2.1rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.4rem;">Smart Team Recommendations</h1>
+            <p class="subtitle" style="color: var(--text-muted); font-size: 1rem; margin: 0;">AI & skill-matched teams scored against your developer profile tech stack</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-message" style="margin-bottom: 1.5rem;">
+                        <span>ℹ️ {{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if recommendations %}
+            <div class="grid grid-2" style="gap: 1.75rem;">
+                {% for item in recommendations %}
+                    <div class="team-card" style="display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 0; background: #ffffff; border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; box-shadow: var(--shadow-sm); transition: all 0.2s ease;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                <h2 style="margin: 0; font-size: 1.35rem; font-weight: 700; color: var(--text-main);">{{ item.team.team_name }}</h2>
+                                
+                                {% if item.percentage >= 75 %}
+                                    <span class="percentage-badge high" style="padding: 0.35rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.82rem; background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0;">{{ item.percentage }}% Match</span>
+                                {% elif item.percentage >= 50 %}
+                                    <span class="percentage-badge medium" style="padding: 0.35rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.82rem; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE;">{{ item.percentage }}% Match</span>
+                                {% else %}
+                                    <span class="percentage-badge low" style="padding: 0.35rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.82rem; background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;">{{ item.percentage }}% Match</span>
+                                {% endif %}
+                            </div>
+
+                            <p style="color: var(--text-muted); font-size: 0.93rem; margin-bottom: 1.25rem; line-height: 1.6;">
+                                {{ item.team.description or 'No description provided.' }}
+                            </p>
+
+                            <!-- Match Progress Bar -->
+                            <div class="progress-track" style="height: 8px; background: #F1F5F9; border-radius: 4px; overflow: hidden; margin-bottom: 1.25rem;">
+                                <div class="progress-fill" style="height: 100%; border-radius: 4px; width: {{ item.percentage }}%; 
+                                    {% if item.percentage >= 75 %}background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+                                    {% elif item.percentage >= 50 %}background: linear-gradient(135deg, #635BDB 0%, #8B5CF6 100%);
+                                    {% else %}background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);{% endif %}">
+                                </div>
+                            </div>
+
+                            <p style="font-size: 0.9rem; margin-bottom: 0.85rem; color: var(--text-body);">
+                                <strong style="color: var(--text-main);">Created By:</strong> {{ item.team.creator_name }}
+                            </p>
+
+                            <div style="margin-bottom: 0.85rem;">
+                                <strong style="font-size: 0.82rem; color: var(--success-text); display: block; margin-bottom: 0.4rem; font-weight: 700;">✓ Matching Skills:</strong>
+                                <div class="skills-wrapper" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                                    {% for skill in item.matching_skills %}
+                                        <span class="skill-pill matching" style="background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; padding: 0.25rem 0.65rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">{{ skill }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            {% if item.missing_skills %}
+                                <div style="margin-bottom: 1.25rem;">
+                                    <strong style="font-size: 0.82rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem; font-weight: 600;">Additional Skills Needed:</strong>
+                                    <div class="skills-wrapper" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                                        {% for skill in item.missing_skills %}
+                                            <span class="skill-pill missing" style="background: #F8FAFC; color: #64748B; border: 1px solid #E2E8F0; padding: 0.25rem 0.65rem; border-radius: 6px; font-size: 0.8rem;">{{ skill }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem; font-size: 0.85rem; margin-top: 1rem;">
+                                <div>
+                                    <span style="color: var(--text-muted); display: block;">Members</span>
+                                    <strong style="color: var(--text-main); font-size: 0.95rem;">{{ item.team.current_members }} / {{ item.team.team_size }}</strong>
+                                </div>
+                                <div>
+                                    <span style="color: var(--text-muted); display: block;">Slots Left</span>
+                                    <strong style="color: var(--primary); font-size: 0.95rem;">{{ item.available_slots }}</strong>
+                                </div>
+                                <div>
+                                    <span style="color: var(--text-muted); display: block;">Status</span>
+                                    {% if item.status == "Open" %}
+                                        <span class="badge badge-open" style="font-size: 0.75rem;">Open</span>
+                                    {% else %}
+                                        <span class="badge badge-full" style="font-size: 0.75rem;">Full</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; padding-top: 1.15rem; border-top: 1px solid var(--border);">
+                            {% if item.available_slots > 0 %}
+                                <form method="POST" action="{{ url_for('request_to_join', team_id=item.team.id) }}" style="margin:0;">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M22 13h-4l-3 4-4-4H2"></path>
+                                            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                                        </svg>
+                                        Request to Join Team
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="disabled-btn btn-block">
+                                    Team Full
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty" style="text-align: center; padding: 4rem 2rem; background: #ffffff; border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-sm);">
+                <div style="width: 60px; height: 60px; border-radius: 16px; background: #EEEDFB; color: #635BDB; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="6"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+                </div>
+                <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--text-main); margin: 0 0 0.5rem;">No Matching Teams Found</h2>
+                <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.5rem; font-size: 0.95rem;">
+                    We couldn't find any open teams matching your technical skills right now. Try updating your profile with additional skills or explore all available teams.
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <a href="{{ url_for('profile') }}" class="btn btn-primary">Update Profile Skills</a>
+                    <a href="/find-teams" class="btn btn-secondary">Explore All Teams</a>
+                </div>
+            </div>
+        {% endif %}
+
+        <div style="margin-top: 2rem;">
+            <a href="{{ url_for('dashboard') }}" class="back-link">← Back to Dashboard</a>
+        </div>
+    </main>
+
+    <!-- Contrast Dark Footer (Screenshot 3 Reference) -->
+    <footer class="saas-footer">
+        <div class="saas-footer-inner">
+            <div class="saas-footer-brand">
+                <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.65rem;">
+                    <div style="width: 28px; height: 28px; border-radius: 8px; background: #635BDB; color: #FFFFFF; display: flex; align-items: center; justify-content: center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #FFFFFF;">Smart Team Finder</h3>
+                </div>
+                <p>An intelligent collaboration platform for developers to form high-impact teams, discover talent, and conquer hackathons.</p>
+            </div>
+
+            <div class="saas-footer-links-group">
+                <div class="saas-footer-col">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li><a href="/find-developers">Find Developers</a></li>
+                        <li><a href="/find-teams">Explore Teams</a></li>
+                        <li><a href="/recommendations">Recommendations</a></li>
+                        <li><a href="{{ url_for('my_teams') }}">My Teams</a></li>
+                    </ul>
+                </div>
+
+                <div class="saas-footer-col">
+                    <h4>Account</h4>
+                    <ul>
+                        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
+                        <li><a href="{{ url_for('team_requests') }}">Team Requests</a></li>
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="saas-footer-bottom">
+            <span>&copy; 2026 Smart Team Finder. All Rights Reserved.</span>
+            <span class="tagline">Build Together, Grow Together.</span>
+        </div>
+    </footer>
+
+</body>
+</html>

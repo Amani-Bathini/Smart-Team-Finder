@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Team - Smart Team Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</head>
+<body style="background: var(--bg-page); display: flex; flex-direction: column; min-height: 100vh;">
+
+    <!-- ==============================================
+         1. PROFESSIONAL STICKY NAVIGATION BAR
+         ============================================== -->
+    <header class="app-header">
+        <a href="{{ url_for('dashboard') }}" class="brand-container">
+            <div class="brand-logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <h2 class="brand-title">Smart Team Finder</h2>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="/find-developers">Find Developers</a>
+            <a href="/find-teams">Find Teams</a>
+            <a href="/recommendations">Recommendations</a>
+            <a href="{{ url_for('team_requests') }}">Team Requests</a>
+            <a href="{{ url_for('my_teams') }}">My Teams</a>
+        </nav>
+
+        <!-- Right Action Items (Notifications & Profile) -->
+        <div class="nav-actions">
+            <!-- Notifications Icon -->
+            <a href="{{ url_for('team_requests') }}" class="nav-icon-btn" title="Team Requests / Notifications" aria-label="Notifications">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </a>
+
+            <!-- Circular User Profile Avatar with Dropdown -->
+            <div class="profile-menu-container">
+                <button type="button" class="profile-avatar-btn" id="userProfileBtn" aria-expanded="false" aria-label="User Profile Menu">
+                    <div class="profile-avatar-circle">
+                        {{ session.get('developer_name', 'Dev')[:2]|upper }}
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+
+                <div class="profile-dropdown" id="userProfileDropdown">
+                    <div class="profile-dropdown-header">
+                        <strong>{{ session.get('developer_name', 'Developer') }}</strong>
+                        <span>Signed In</span>
+                    </div>
+                    <a href="{{ url_for('profile') }}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        My Profile
+                    </a>
+                    <div style="height: 1px; background: var(--border); margin: 0.35rem 0;"></div>
+                    <a href="{{ url_for('logout') }}" style="color: var(--danger);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==============================================
+         2. PAGE HEADER & CONTENT
+         ============================================== -->
+    <main class="container container-narrow" style="flex: 1; padding-top: 2.5rem; padding-bottom: 3.5rem; max-width: 680px; margin: 0 auto;">
+        <div class="page-header" style="text-align: center; margin-bottom: 2rem;">
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: #EEEDFB; color: #635BDB; padding: 0.35rem 0.85rem; border-radius: 20px; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.75rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+                    <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+                </svg>
+                Squad Builder
+            </div>
+            <h1 style="font-size: 2.1rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.4rem;">Create a New Team</h1>
+            <p class="subtitle" style="color: var(--text-muted); font-size: 1rem; margin: 0;">Assemble your hackathon squad and define required skills to attract top developers</p>
+        </div>
+
+        {% if message %}
+            <div class="alert {% if 'successfully' in message.lower() %}alert-success{% else %}alert-error{% endif %}" style="margin-bottom: 1.5rem;">
+                <span>{{ '✅' if 'successfully' in message.lower() else '⚠️' }} {{ message }}</span>
+            </div>
+        {% endif %}
+
+        <div class="card" style="background: #ffffff; border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md); padding: 2.25rem;">
+            <form method="POST" action="{{ url_for('create_team') }}">
+                <div class="form-group">
+                    <label for="team_name">Team Name</label>
+                    <input type="text" id="team_name" name="team_name" placeholder="e.g. CodeForge Mavericks" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Team & Project Description</label>
+                    <textarea id="description" name="description" placeholder="Briefly describe your project idea, hackathon goals, and team culture..." style="min-height: 90px;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="required_skills">Required Skills <span style="font-weight: normal; color: var(--text-muted); font-size: 0.82rem;">(Comma separated)</span></label>
+                    <textarea id="required_skills" name="required_skills" placeholder="e.g. Python, Flask, React, PostgreSQL" required style="min-height: 80px;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="team_size">Total Team Size (2 - 20 members)</label>
+                    <input type="number" id="team_size" name="team_size" placeholder="e.g. 4" min="2" max="20" required>
+                </div>
+
+                <button type="submit" class="btn btn-block btn-lg" style="margin-top: 0.75rem;">
+                    🚀 Create Team & Become Leader
+                </button>
+            </form>
+        </div>
+
+        <div style="text-align: center; margin-top: 1.75rem;">
+            <a href="{{ url_for('dashboard') }}" class="back-link">← Back to Dashboard</a>
+        </div>
+    </main>
+
+    <!-- Contrast Dark Footer (Screenshot 3 Reference) -->
+    <footer class="saas-footer">
+        <div class="saas-footer-inner">
+            <div class="saas-footer-brand">
+                <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.65rem;">
+                    <div style="width: 28px; height: 28px; border-radius: 8px; background: #635BDB; color: #FFFFFF; display: flex; align-items: center; justify-content: center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #FFFFFF;">Smart Team Finder</h3>
+                </div>
+                <p>An intelligent collaboration platform for developers to form high-impact teams, discover talent, and conquer hackathons.</p>
+            </div>
+
+            <div class="saas-footer-links-group">
+                <div class="saas-footer-col">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li><a href="/find-developers">Find Developers</a></li>
+                        <li><a href="/find-teams">Explore Teams</a></li>
+                        <li><a href="/recommendations">Recommendations</a></li>
+                        <li><a href="{{ url_for('my_teams') }}">My Teams</a></li>
+                    </ul>
+                </div>
+
+                <div class="saas-footer-col">
+                    <h4>Account</h4>
+                    <ul>
+                        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
+                        <li><a href="{{ url_for('team_requests') }}">Team Requests</a></li>
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="saas-footer-bottom">
+            <span>&copy; 2026 Smart Team Finder. All Rights Reserved.</span>
+            <span class="tagline">Build Together, Grow Together.</span>
+        </div>
+    </footer>
+
+</body>
+</html>

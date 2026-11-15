@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Join Requests - Smart Team Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</head>
+<body style="background: var(--bg-page); display: flex; flex-direction: column; min-height: 100vh;">
+
+    <!-- ==============================================
+         1. PROFESSIONAL STICKY NAVIGATION BAR
+         ============================================== -->
+    <header class="app-header">
+        <a href="{{ url_for('dashboard') }}" class="brand-container">
+            <div class="brand-logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <h2 class="brand-title">Smart Team Finder</h2>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="/find-developers">Find Developers</a>
+            <a href="/find-teams">Find Teams</a>
+            <a href="/recommendations">Recommendations</a>
+            <a href="{{ url_for('team_requests') }}" class="active">Team Requests</a>
+            <a href="{{ url_for('my_teams') }}">My Teams</a>
+        </nav>
+
+        <!-- Right Action Items (Notifications & Profile) -->
+        <div class="nav-actions">
+            <!-- Notifications Icon -->
+            <a href="{{ url_for('team_requests') }}" class="nav-icon-btn" title="Team Requests / Notifications" aria-label="Notifications">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </a>
+
+            <!-- Circular User Profile Avatar with Dropdown -->
+            <div class="profile-menu-container">
+                <button type="button" class="profile-avatar-btn" id="userProfileBtn" aria-expanded="false" aria-label="User Profile Menu">
+                    <div class="profile-avatar-circle">
+                        {{ session.get('developer_name', 'Dev')[:2]|upper }}
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+
+                <div class="profile-dropdown" id="userProfileDropdown">
+                    <div class="profile-dropdown-header">
+                        <strong>{{ session.get('developer_name', 'Developer') }}</strong>
+                        <span>Signed In</span>
+                    </div>
+                    <a href="{{ url_for('profile') }}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        My Profile
+                    </a>
+                    <div style="height: 1px; background: var(--border); margin: 0.35rem 0;"></div>
+                    <a href="{{ url_for('logout') }}" style="color: var(--danger);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==============================================
+         2. PAGE HEADER & CONTENT
+         ============================================== -->
+    <main class="container" style="flex: 1; padding-top: 2rem; padding-bottom: 3.5rem;">
+        <div class="page-header" style="margin-bottom: 2rem;">
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: #EEEDFB; color: #635BDB; padding: 0.35rem 0.85rem; border-radius: 20px; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.75rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M22 13h-4l-3 4-4-4H2"></path>
+                    <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                </svg>
+                Applications & Requests
+            </div>
+            <h1 style="font-size: 2.1rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.4rem;">Team Join Requests</h1>
+            <p class="subtitle" style="color: var(--text-muted); font-size: 1rem; margin: 0;">Review and manage developers who want to join your hackathon squads</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-message" style="margin-bottom: 1.5rem;">
+                        <span>ℹ️ {{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if join_requests %}
+            <div class="grid grid-2" style="gap: 1.75rem;">
+                {% for req in join_requests %}
+                    <div class="request-card" style="display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 0; background: #ffffff; border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; box-shadow: var(--shadow-sm); transition: all 0.2s ease;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem;">
+                                <div>
+                                    <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Target Team</span>
+                                    <h2 style="margin: 0; font-size: 1.35rem; font-weight: 700; color: var(--primary);">{{ req.team_name }}</h2>
+                                </div>
+                                {% if req.status == 'Pending' %}
+                                    <span class="badge badge-pending" style="background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; padding: 0.35rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.8rem;">⏳ Pending</span>
+                                {% elif req.status == 'Accepted' %}
+                                    <span class="badge badge-open" style="background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; padding: 0.35rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.8rem;">✓ Accepted</span>
+                                {% else %}
+                                    <span class="badge badge-full" style="background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; padding: 0.35rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.8rem;">✗ Rejected</span>
+                                {% endif %}
+                            </div>
+
+                            <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 12px; padding: 1.15rem; margin-bottom: 1rem;">
+                                <div style="display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.85rem;">
+                                    <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary-gradient); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0; box-shadow: var(--shadow-xs);">
+                                        {{ req.developer_name[:2]|upper }}
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-main);">{{ req.developer_name }}</h3>
+                                        <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">{{ req.email }}</p>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.85rem;">
+                                    {% if req.preferred_role %}
+                                        <span class="badge badge-primary" style="font-size: 0.75rem;">{{ req.preferred_role }}</span>
+                                    {% endif %}
+                                    {% if req.experience_level %}
+                                        <span class="badge badge-role" style="font-size: 0.75rem;">{{ req.experience_level }}</span>
+                                    {% endif %}
+                                </div>
+
+                                <div>
+                                    <strong style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; font-weight: 600;">Technical Skills:</strong>
+                                    <div class="skills-wrapper" style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                                        {% if req.skills %}
+                                            {% for skill in req.skills.split(',') %}
+                                                {% if skill.strip() %}
+                                                    <span class="skill-pill" style="background: #ffffff; border: 1px solid var(--border); padding: 0.2rem 0.55rem; border-radius: 6px; font-size: 0.78rem;">{{ skill.strip() }}</span>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <span style="color: var(--text-muted); font-size: 0.85rem;">Not provided</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if req.status == 'Pending' %}
+                            <div style="display: flex; gap: 0.75rem; margin-top: 1rem; padding-top: 1.15rem; border-top: 1px solid var(--border);">
+                                <form action="{{ url_for('accept_request', request_id=req.request_id) }}" method="POST" style="flex: 1; margin: 0;">
+                                    <button type="submit" class="accept-btn btn-block" style="width: 100%;">
+                                        ✓ Accept
+                                    </button>
+                                </form>
+
+                                <form action="{{ url_for('reject_request', request_id=req.request_id) }}" method="POST" style="flex: 1; margin: 0;">
+                                    <button type="submit" class="reject-btn btn-block" style="width: 100%;">
+                                        ✕ Reject
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty" style="text-align: center; padding: 4rem 2rem; background: #ffffff; border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-sm);">
+                <div style="width: 60px; height: 60px; border-radius: 16px; background: #EEEDFB; color: #635BDB; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 13h-4l-3 4-4-4H2"></path>
+                        <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                    </svg>
+                </div>
+                <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--text-main); margin: 0 0 0.5rem;">No Join Requests Yet</h2>
+                <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.5rem; font-size: 0.95rem;">
+                    You don't have any incoming member applications right now. When developers request to join your teams, they will appear here for review.
+                </p>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Return to Dashboard</a>
+            </div>
+        {% endif %}
+
+        <div style="margin-top: 2rem;">
+            <a href="{{ url_for('dashboard') }}" class="back-link">← Back to Dashboard</a>
+        </div>
+    </main>
+
+    <!-- Contrast Dark Footer (Screenshot 3 Reference) -->
+    <footer class="saas-footer">
+        <div class="saas-footer-inner">
+            <div class="saas-footer-brand">
+                <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.65rem;">
+                    <div style="width: 28px; height: 28px; border-radius: 8px; background: #635BDB; color: #FFFFFF; display: flex; align-items: center; justify-content: center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #FFFFFF;">Smart Team Finder</h3>
+                </div>
+                <p>An intelligent collaboration platform for developers to form high-impact teams, discover talent, and conquer hackathons.</p>
+            </div>
+
+            <div class="saas-footer-links-group">
+                <div class="saas-footer-col">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li><a href="/find-developers">Find Developers</a></li>
+                        <li><a href="/find-teams">Explore Teams</a></li>
+                        <li><a href="/recommendations">Recommendations</a></li>
+                        <li><a href="{{ url_for('my_teams') }}">My Teams</a></li>
+                    </ul>
+                </div>
+
+                <div class="saas-footer-col">
+                    <h4>Account</h4>
+                    <ul>
+                        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
+                        <li><a href="{{ url_for('team_requests') }}">Team Requests</a></li>
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="saas-footer-bottom">
+            <span>&copy; 2026 Smart Team Finder. All Rights Reserved.</span>
+            <span class="tagline">Build Together, Grow Together.</span>
+        </div>
+    </footer>
+
+</body>
+</html>

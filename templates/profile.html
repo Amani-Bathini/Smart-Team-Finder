@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Smart Team Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</head>
+<body>
+    <!-- ==============================================
+         1. PROFESSIONAL STICKY NAVIGATION BAR
+         ============================================== -->
+    <header class="app-header">
+        <a href="{{ url_for('dashboard') }}" class="brand-container">
+            <div class="brand-logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <h2 class="brand-title">Smart Team Finder</h2>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="/find-developers">Find Developers</a>
+            <a href="/find-teams">Find Teams</a>
+            <a href="/recommendations">Recommendations</a>
+            <a href="{{ url_for('team_requests') }}">Team Requests</a>
+            <a href="{{ url_for('my_teams') }}">My Teams</a>
+        </nav>
+
+        <!-- Right Action Items (Notifications & Profile) -->
+        <div class="nav-actions">
+            <!-- Notifications Icon -->
+            <a href="{{ url_for('team_requests') }}" class="nav-icon-btn" title="Team Requests / Notifications" aria-label="Notifications">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </a>
+
+            <!-- Circular User Profile Avatar with Dropdown -->
+            <div class="profile-menu-container">
+                <button type="button" class="profile-avatar-btn" id="userProfileBtn" aria-expanded="false" aria-label="User Profile Menu">
+                    <div class="profile-avatar-circle">
+                        {{ developer.name[:2]|upper }}
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+
+                <div class="profile-dropdown" id="userProfileDropdown">
+                    <div class="profile-dropdown-header">
+                        <strong>{{ developer.name }}</strong>
+                    </div>
+                    <a href="{{ url_for('profile') }}" class="active">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        My Profile
+                    </a>
+                    <div style="height: 1px; background: var(--border); margin: 0.35rem 0;"></div>
+                    <a href="{{ url_for('logout') }}" style="color: var(--danger);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Logout
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mobile Hamburger Button -->
+            <button class="mobile-nav-toggle" id="mobileNavBtn" aria-label="Toggle navigation">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- ==============================================
+             BACK TO DASHBOARD LINK
+             ============================================== -->
+        <div style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
+            <a href="{{ url_for('dashboard') }}" class="back-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <!-- ==============================================
+             FLASH NOTIFICATIONS
+             ============================================== -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-message">
+                        <span>{{ message }}</span>
+                        <button type="button" class="alert-close" onclick="this.parentElement.remove()" aria-label="Close notification">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- ==============================================
+             PAGE HEADER
+             ============================================== -->
+        <div class="page-header" style="margin-bottom: 2rem;">
+            <h1>My Developer Profile</h1>
+            <p class="subtitle">View and manage your technical profile, credentials, and hackathon preferences.</p>
+        </div>
+
+        <!-- ==============================================
+             PROFESSIONAL DEVELOPER PROFILE CARD
+             ============================================== -->
+        <section class="saas-profile-card">
+            <div class="saas-profile-header">
+                <div class="saas-profile-user">
+                    <div class="saas-profile-avatar-xl">
+                        {{ developer.name[:2]|upper }}
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.65rem; color: var(--text-main);">{{ developer.name }}</h2>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.45rem; flex-wrap: wrap;">
+                            <span class="badge badge-primary">{{ developer.preferred_role or 'Developer' }}</span>
+                            <span class="badge badge-role">{{ developer.experience_level or 'Not specified' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Profile Button -->
+                <div>
+                    <button type="button" class="btn btn-primary" id="openEditModalBtn" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Edit Profile
+                    </button>
+                </div>
+            </div>
+
+            <!-- Profile Details Grid -->
+            <div class="saas-profile-meta-grid">
+                <div class="saas-profile-item">
+                    <span class="saas-profile-item-label">Email Address</span>
+                    <span class="saas-profile-item-value">{{ developer.email }}</span>
+                </div>
+
+                <div class="saas-profile-item">
+                    <span class="saas-profile-item-label">HackerRank Profile</span>
+                    <span class="saas-profile-item-value">
+                        {% if developer.hackerrank_username %}
+                            <a href="https://www.hackerrank.com/profile/{{ developer.hackerrank_username }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 0.35rem; color: var(--primary); text-decoration: none; font-weight: 600;">
+                                {{ developer.hackerrank_username }}
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </a>
+                        {% else %}
+                            <span style="color: var(--text-muted); font-weight: normal;">Not Added</span>
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="saas-profile-item">
+                    <span class="saas-profile-item-label">Experience Level</span>
+                    <span class="saas-profile-item-value">{{ developer.experience_level or 'Not specified' }}</span>
+                </div>
+
+                <div class="saas-profile-item">
+                    <span class="saas-profile-item-label">Preferred Developer Role</span>
+                    <span class="saas-profile-item-value">{{ developer.preferred_role or 'Not specified' }}</span>
+                </div>
+
+                <div class="saas-profile-item" style="grid-column: 1 / -1;">
+                    <span class="saas-profile-item-label">Technical Skills</span>
+                    <div class="skills-wrapper" style="margin-top: 0.5rem;">
+                        {% if developer.skills %}
+                            {% for skill in developer.skills.split(',') %}
+                                {% if skill.strip() %}
+                                    <span class="skill-pill">{{ skill.strip() }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.92rem;">No technical skills listed yet. Click "Edit Profile" to add your skills.</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==============================================
+             EXPLORE RELEVANT OPPORTUNITIES
+             ============================================== -->
+        <section style="margin-top: 2rem;">
+            <div class="saas-section-header">
+                <div>
+                    <h2>Recommended Actions</h2>
+                    <p class="subtitle" style="margin: 0;">Connect with teams and developers tailored to your profile</p>
+                </div>
+            </div>
+
+            <div class="saas-explore-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                <!-- Smart Recommendations -->
+                <a href="/recommendations" class="saas-feature-card">
+                    <div>
+                        <div class="saas-feature-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </div>
+                        <h3 class="saas-feature-title">Smart Recommendations</h3>
+                        <p class="saas-feature-desc">Discover hackathon teams seeking your exact skill set and role.</p>
+                    </div>
+                    <div class="saas-feature-action">
+                        View Matches
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </div>
+                </a>
+
+                <!-- Find Teams -->
+                <a href="/find-teams" class="saas-feature-card">
+                    <div>
+                        <div class="saas-feature-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <h3 class="saas-feature-title">Explore Active Teams</h3>
+                        <p class="saas-feature-desc">Browse squads currently recruiting developers and send join requests.</p>
+                    </div>
+                    <div class="saas-feature-action">
+                        Browse Teams
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </div>
+
+    <!-- ==============================================
+         EDIT PROFILE MODAL DIALOG
+         ============================================== -->
+    <div class="modal-backdrop" id="editProfileModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="modalTitle">Edit Developer Profile</h3>
+                <button type="button" class="modal-close-btn" id="closeEditModalBtn" aria-label="Close dialog">&times;</button>
+            </div>
+            <form method="POST" action="{{ url_for('profile') }}">
+                <div class="modal-body">
+                    <!-- Full Name -->
+                    <div class="form-group">
+                        <label for="edit_name">Full Name <span style="color: var(--danger);">*</span></label>
+                        <input type="text" id="edit_name" name="name" value="{{ developer.name }}" required placeholder="Enter your full name">
+                    </div>
+
+                    <!-- HackerRank Username -->
+                    <div class="form-group">
+                        <label for="edit_hackerrank">HackerRank Username</label>
+                        <input type="text" id="edit_hackerrank" name="hackerrank_username" value="{{ developer.hackerrank_username or '' }}" placeholder="e.g. alex_developer">
+                    </div>
+
+                    <!-- Technical Skills -->
+                    <div class="form-group">
+                        <label for="edit_skills">Technical Skills <span style="color: var(--danger);">*</span></label>
+                        <input type="text" id="edit_skills" name="skills" value="{{ developer.skills or '' }}" required placeholder="e.g. Python, Flask, React, MySQL">
+                        <small style="color: var(--text-muted); font-size: 0.82rem; margin-top: 0.35rem; display: block;">Separate skills with commas (e.g. Python, Docker, JavaScript).</small>
+                    </div>
+
+                    <!-- Experience Level -->
+                    <div class="form-group">
+                        <label for="edit_experience">Experience Level <span style="color: var(--danger);">*</span></label>
+                        <select id="edit_experience" name="experience_level" required>
+                            <option value="Beginner" {% if developer.experience_level == 'Beginner' %}selected{% endif %}>Beginner</option>
+                            <option value="Intermediate" {% if developer.experience_level == 'Intermediate' or not developer.experience_level %}selected{% endif %}>Intermediate</option>
+                            <option value="Advanced" {% if developer.experience_level == 'Advanced' %}selected{% endif %}>Advanced</option>
+                        </select>
+                    </div>
+
+                    <!-- Preferred Role -->
+                    <div class="form-group">
+                        <label for="edit_role">Preferred Developer Role</label>
+                        <select id="edit_role" name="preferred_role">
+                            <option value="Frontend Developer" {% if developer.preferred_role == 'Frontend Developer' %}selected{% endif %}>Frontend Developer</option>
+                            <option value="Backend Developer" {% if developer.preferred_role == 'Backend Developer' %}selected{% endif %}>Backend Developer</option>
+                            <option value="Full Stack Developer" {% if developer.preferred_role == 'Full Stack Developer' or not developer.preferred_role %}selected{% endif %}>Full Stack Developer</option>
+                            <option value="AI / ML Engineer" {% if developer.preferred_role == 'AI / ML Engineer' %}selected{% endif %}>AI / ML Engineer</option>
+                            <option value="Mobile App Developer" {% if developer.preferred_role == 'Mobile App Developer' %}selected{% endif %}>Mobile App Developer</option>
+                            <option value="DevOps / Cloud Engineer" {% if developer.preferred_role == 'DevOps / Cloud Engineer' %}selected{% endif %}>DevOps / Cloud Engineer</option>
+                            <option value="UI/UX Designer" {% if developer.preferred_role == 'UI/UX Designer' %}selected{% endif %}>UI/UX Designer</option>
+                            <option value="Data Scientist" {% if developer.preferred_role == 'Data Scientist' %}selected{% endif %}>Data Scientist</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn secondary" id="cancelEditModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         PROFESSIONAL SAAS FOOTER
+         ============================================== -->
+    <footer class="saas-footer">
+        <div class="saas-footer-inner">
+            <div class="saas-footer-brand">
+                <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.65rem;">
+                    <div class="brand-logo-icon" style="width: 28px; height: 28px; font-size: 0.9rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700;">Smart Team Finder</h3>
+                </div>
+                <p>An intelligent collaboration platform for developers to form high-impact teams, discover talent, and conquer hackathons.</p>
+            </div>
+
+            <div class="saas-footer-links-group">
+                <div class="saas-footer-col">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li><a href="/find-developers">Find Developers</a></li>
+                        <li><a href="/find-teams">Explore Teams</a></li>
+                        <li><a href="/recommendations">Recommendations</a></li>
+                        <li><a href="/create-team">Create Team</a></li>
+                    </ul>
+                </div>
+
+                <div class="saas-footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Help & FAQ</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="saas-footer-bottom">
+            <span>&copy; 2026 Smart Team Finder. All rights reserved.</span>
+            <span>Built for developers &bull; Build Together, Grow Together</span>
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts for Profile Dropdown & Edit Modal -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Profile Dropdown Toggle
+            const profileBtn = document.getElementById('userProfileBtn');
+            const profileDropdown = document.getElementById('userProfileDropdown');
+
+            if (profileBtn && profileDropdown) {
+                profileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isExpanded = profileDropdown.classList.toggle('show');
+                    profileBtn.setAttribute('aria-expanded', isExpanded);
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                        profileDropdown.classList.remove('show');
+                        profileBtn.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+
+            // Edit Profile Modal
+            const editModal = document.getElementById('editProfileModal');
+            const openModalBtn = document.getElementById('openEditModalBtn');
+            const closeModalBtn = document.getElementById('closeEditModalBtn');
+            const cancelModalBtn = document.getElementById('cancelEditModalBtn');
+
+            function openModal() {
+                if (editModal) {
+                    editModal.classList.add('show');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            function closeModal() {
+                if (editModal) {
+                    editModal.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            if (openModalBtn) openModalBtn.addEventListener('click', openModal);
+            if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+            if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
+
+            // Close on backdrop click
+            if (editModal) {
+                editModal.addEventListener('click', (e) => {
+                    if (e.target === editModal) {
+                        closeModal();
+                    }
+                });
+            }
+
+            // Close on ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && editModal && editModal.classList.contains('show')) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Registration - Smart Team Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</head>
+<body style="background: var(--bg-page); display: flex; flex-direction: column; min-height: 100vh;">
+
+    <!-- Navigation Bar -->
+    <header class="public-header">
+        <a href="{{ url_for('home') }}" class="public-brand">
+            <div class="public-brand-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <h1 class="public-brand-title">Smart Team Finder</h1>
+        </a>
+
+        <nav class="public-nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}" class="active public-nav-btn-solid">Register</a>
+        </nav>
+    </header>
+
+    <!-- Main Registration Form -->
+    <main class="auth-wrapper" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 3.5rem 1rem;">
+        <div class="auth-card" style="width: 100%; max-width: 540px; background: #ffffff; border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-lg); padding: 2.5rem 2.25rem;">
+            <div class="auth-header" style="text-align: center; margin-bottom: 2rem;">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: #EEEDFB; color: #635BDB; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                </div>
+                <h2 style="font-size: 1.6rem; font-weight: 700; color: var(--text-main); margin: 0 0 0.4rem;">Developer Registration</h2>
+                <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0;">Create your profile to find teammates and join hackathon projects</p>
+            </div>
+
+            {% if message %}
+                <div class="alert alert-error" style="margin-bottom: 1.5rem;">
+                    <span>⚠️ {{ message }}</span>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="/register">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" placeholder="e.g. John Doe" required autocomplete="name">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="name@example.com" required autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Create a strong password" required autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label for="hackerrank_username">HackerRank Username <span style="font-weight: normal; color: var(--text-muted); font-size: 0.82rem;">(Optional)</span></label>
+                    <input type="text" id="hackerrank_username" name="hackerrank_username" placeholder="e.g. johndoe_dev">
+                </div>
+
+                <div class="form-group">
+                    <label for="skills">Technical Skills <span style="font-weight: normal; color: var(--text-muted); font-size: 0.82rem;">(Comma-separated)</span></label>
+                    <input type="text" id="skills" name="skills" placeholder="Python, Flask, React, SQL" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="experience_level">Experience Level</label>
+                    <select id="experience_level" name="experience_level" required>
+                        <option value="">Select Experience</option>
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="preferred_role">Preferred Role</label>
+                    <select id="preferred_role" name="preferred_role" required>
+                        <option value="">Select Role</option>
+                        <option value="Frontend Developer">Frontend Developer</option>
+                        <option value="Backend Developer">Backend Developer</option>
+                        <option value="Full Stack Developer">Full Stack Developer</option>
+                        <option value="AI/ML Developer">AI/ML Developer</option>
+                        <option value="Problem Solver">Problem Solver</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-block btn-lg" style="margin-top: 0.75rem;">
+                    Complete Registration
+                </button>
+            </form>
+
+            <div class="auth-footer" style="text-align: center; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border); font-size: 0.92rem; color: var(--text-muted);">
+                <p style="margin: 0;">Already have an account? 
+                    <a href="/login" style="color: var(--primary); font-weight: 600; text-decoration: none;">Login Here</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Contrast Dark Footer (Screenshot 3 Reference) -->
+    <footer class="saas-footer">
+        <div class="saas-footer-inner">
+            <div class="saas-footer-brand">
+                <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.65rem;">
+                    <div style="width: 28px; height: 28px; border-radius: 8px; background: #635BDB; color: #FFFFFF; display: flex; align-items: center; justify-content: center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #FFFFFF;">Smart Team Finder</h3>
+                </div>
+                <p>An intelligent collaboration platform for developers to form high-impact teams, discover talent, and conquer hackathons.</p>
+            </div>
+
+            <div class="saas-footer-links-group">
+                <div class="saas-footer-col">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="{{ url_for('home') }}">Home</a></li>
+                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                        <li><a href="{{ url_for('register') }}">Register</a></li>
+                    </ul>
+                </div>
+
+                <div class="saas-footer-col">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="/find-developers">Find Developers</a></li>
+                        <li><a href="/find-teams">Explore Teams</a></li>
+                        <li><a href="/recommendations">Recommendations</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="saas-footer-bottom">
+            <span>&copy; 2026 Smart Team Finder. All Rights Reserved.</span>
+            <span class="tagline">Build Together, Grow Together.</span>
+        </div>
+    </footer>
+
+</body>
+</html>
