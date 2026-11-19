@@ -55,7 +55,7 @@ Database name: `smart_team_finder`. Tables used by the app:
 - `team_members` (id, team_id, developer_id, role)
 - `team_requests` (id, team_id, developer_id, status, requested_at)
 
-> Add your SQL schema file (e.g. `schema.sql`) to the repo and mention it here.
+> schema.sql
 
 ## Setup and Installation
 
